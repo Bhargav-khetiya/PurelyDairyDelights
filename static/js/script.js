@@ -58,3 +58,8 @@ $(document).ready(function() {
 }); 
 // jquery end
 
+setTimeout(function() {
+    $('#massgae').fadeOut('slow')// Your code to execute after the delay
+}, 4000);
+
+
