@@ -22,3 +22,6 @@ in gamils app passwords add project name and change settings email passwords wit
 
     Use this generated password instead of your regular Google account password in your Django application's email settings.
 
+
+    python -m pip install requests for rdirect checkout > login > cart
+

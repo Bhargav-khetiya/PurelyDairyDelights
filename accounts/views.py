@@ -1,3 +1,4 @@
+import requests
 from django.contrib import auth, messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.tokens import default_token_generator
@@ -12,6 +13,8 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 
 from accounts.forms import RegistrationForm
+from carts.models import Cart, CartItem
+from carts.views import _cart_id
 
 from .models import Account
 
@@ -63,9 +66,41 @@ def login(request):
         user = auth.authenticate(email=email, password=password)
 
         if user is not None:
+            try:
+                cart_session = Cart.objects.get(cart_id=_cart_id(request))
+                cart_items_session = CartItem.objects.filter(cart=cart_session)
+
+                # Get the user's existing cart items
+                cart_items_user = CartItem.objects.filter(user=user)
+
+                # Merge cart items
+                for item_session in cart_items_session:
+                    # Check if the same product exists in the user's cart
+                    cart_item_user = cart_items_user.filter(product=item_session.product).first()
+
+                    if cart_item_user:
+                        # If the product exists, update the quantity
+                        cart_item_user.quantity += item_session.quantity
+                        cart_item_user.save()
+                    else:
+                        # If the product does not exist, associate it with the user
+                        item_session.user = user
+                        item_session.save()
+                        
+            except:
+                pass
             auth.login(request, user)
-            messages.success(request, 'You are now Logged in.')
-            return redirect('dashboard')  # Using the correct name of the URL pattern
+            messages.success(request, 'You are now logged in.')
+            url = request.META.get('HTTP_REFERER')
+            try:
+                query = requests.utils.urlparse(url).query
+                # next=/cart/checkout/
+                params = dict(x.split('=') for x in query.split('&'))
+                if 'next' in params:
+                    nextPage = params['next']
+                    return redirect(nextPage)
+            except:
+                return redirect('dashboard')
 
         else:
             messages.error(request, 'Invalid login credentials')
