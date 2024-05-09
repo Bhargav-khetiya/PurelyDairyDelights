@@ -25,3 +25,8 @@ in gamils app passwords add project name and change settings email passwords wit
 
     python -m pip install requests for rdirect checkout > login > cart
 
+
+    for imaged in product we need to install pip install django-admin-thumbnails
+
+pip install python-decouple for hide email and other sensitive info
+or python -m pip install python-decouple for current python interpreter
